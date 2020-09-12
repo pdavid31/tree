@@ -5,6 +5,7 @@ import (
 	"os"
 )
 
+// Node type
 type Node struct {
 	Path     string
 	Parent   *Node
@@ -13,6 +14,7 @@ type Node struct {
 	Config   *TreeConfig
 }
 
+// NewNode is the initial tree / root node constructor
 func NewNode(path string, config *TreeConfig) (*Node, error) {
 	n := &Node{Path: path, Config: config}
 
@@ -30,6 +32,7 @@ func NewNode(path string, config *TreeConfig) (*Node, error) {
 	return n, nil
 }
 
+// GetRoot gets the trees root
 func (n Node) GetRoot() Node {
 	if n.Parent == nil {
 		return n
@@ -38,6 +41,8 @@ func (n Node) GetRoot() Node {
 	return n.Parent.GetRoot()
 }
 
+// GetConfig gets the config
+// object stored in the trees root
 func (n Node) GetConfig() *TreeConfig {
 	return n.GetRoot().Config
 }
