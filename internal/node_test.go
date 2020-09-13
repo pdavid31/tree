@@ -40,16 +40,16 @@ func TestNode_Equals(t *testing.T) {
 
 func TestNode_GetConfig(t *testing.T) {
 	tests := []struct {
-		name              string
-		arg               *Node
-		addParentFunction func(*Node)
-		accessFunction    func(*Node) *TreeConfig
-		expected          *TreeConfig
+		name            string
+		arg             *Node
+		prepareFunction func(*Node)
+		accessFunction  func(*Node) *TreeConfig
+		expected        *TreeConfig
 	}{
 		{
 			name: "simple",
 			arg:  &Node{Config: &TreeConfig{DirectoriesOnly: true}},
-			addParentFunction: func(node *Node) {
+			prepareFunction: func(node *Node) {
 				return
 			},
 			accessFunction: func(node *Node) *TreeConfig {
@@ -62,7 +62,7 @@ func TestNode_GetConfig(t *testing.T) {
 			arg: &Node{Config: &TreeConfig{DirectoriesOnly: true}, Children: []*Node{
 				{Path: ".idea"},
 			}},
-			addParentFunction: func(node *Node) {
+			prepareFunction: func(node *Node) {
 				node.Children[0].Parent = node
 			},
 			accessFunction: func(node *Node) *TreeConfig {
@@ -76,7 +76,7 @@ func TestNode_GetConfig(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			// add the parent node to the child
 			// to enable use of get root function
-			test.addParentFunction(test.arg)
+			test.prepareFunction(test.arg)
 
 			output := test.accessFunction(test.arg)
 			assert.Equal(t, test.expected, output)
@@ -86,16 +86,16 @@ func TestNode_GetConfig(t *testing.T) {
 
 func TestNode_GetRoot(t *testing.T) {
 	tests := []struct {
-		name              string
-		arg               *Node
-		addParentFunction func(*Node)
-		accessFunction    func(*Node) Node
-		expected          Node
+		name            string
+		arg             *Node
+		prepareFunction func(*Node)
+		accessFunction  func(*Node) Node
+		expected        Node
 	}{
 		{
 			name: "simple",
 			arg:  &Node{},
-			addParentFunction: func(node *Node) {
+			prepareFunction: func(node *Node) {
 				return
 			},
 			accessFunction: func(node *Node) Node {
@@ -108,7 +108,7 @@ func TestNode_GetRoot(t *testing.T) {
 			arg: &Node{Children: []*Node{
 				{Path: ".idea"},
 			}},
-			addParentFunction: func(node *Node) {
+			prepareFunction: func(node *Node) {
 				node.Children[0].Parent = node
 			},
 			accessFunction: func(node *Node) Node {
@@ -123,10 +123,10 @@ func TestNode_GetRoot(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			// add the parent node to the child
-			test.addParentFunction(test.arg)
+			test.prepareFunction(test.arg)
 			// add the parent node to the child
 			// of the expected object as well
-			test.addParentFunction(&test.expected)
+			test.prepareFunction(&test.expected)
 
 			output := test.accessFunction(test.arg)
 			assert.Equal(t, test.expected, output)
@@ -136,15 +136,15 @@ func TestNode_GetRoot(t *testing.T) {
 
 func TestNode_String(t *testing.T) {
 	tests := []struct {
-		name              string
-		arg               *Node
-		addParentFunction func(*Node)
-		expected          string
+		name            string
+		arg             *Node
+		prepareFunction func(*Node)
+		expected        string
 	}{
 		{
 			name: "simple",
 			arg:  &Node{Config: &TreeConfig{}, Path: ".", Info: fakeFile{name: "."}},
-			addParentFunction: func(node *Node) {
+			prepareFunction: func(node *Node) {
 				return
 			},
 			expected: ".\n",
@@ -157,7 +157,7 @@ func TestNode_String(t *testing.T) {
 				}},
 				{Path: "./.gitignore", Info: fakeFile{name: ".gitignore"}},
 			}},
-			addParentFunction: func(node *Node) {
+			prepareFunction: func(node *Node) {
 				node.Children[0].Parent = node
 				node.Children[1].Parent = node
 				node.Children[0].Children[0].Parent = node.Children[0]
@@ -172,7 +172,7 @@ func TestNode_String(t *testing.T) {
 				}},
 				{Path: "./.gitignore", Info: fakeFile{name: ".gitignore"}},
 			}},
-			addParentFunction: func(node *Node) {
+			prepareFunction: func(node *Node) {
 				node.Children[0].Parent = node
 				node.Children[1].Parent = node
 				node.Children[0].Children[0].Parent = node.Children[0]
@@ -187,7 +187,7 @@ func TestNode_String(t *testing.T) {
 				}},
 				{Path: "./.gitignore", Info: fakeFile{name: ".gitignore"}},
 			}},
-			addParentFunction: func(node *Node) {
+			prepareFunction: func(node *Node) {
 				node.Children[0].Parent = node
 				node.Children[1].Parent = node
 				node.Children[0].Children[0].Parent = node.Children[0]
@@ -199,7 +199,7 @@ func TestNode_String(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			// add the parent node to the child
-			test.addParentFunction(test.arg)
+			test.prepareFunction(test.arg)
 
 			output := test.arg.String()
 			assert.Equal(t, test.expected, output)
@@ -209,16 +209,16 @@ func TestNode_String(t *testing.T) {
 
 func TestNode_isLastElement(t *testing.T) {
 	tests := []struct {
-		name              string
-		arg               *Node
-		addParentFunction func(*Node)
-		accessFunction    func(*Node) bool
-		expected          bool
+		name            string
+		arg             *Node
+		prepareFunction func(*Node)
+		accessFunction  func(*Node) bool
+		expected        bool
 	}{
 		{
 			name: "root",
 			arg:  &Node{},
-			addParentFunction: func(node *Node) {
+			prepareFunction: func(node *Node) {
 				return
 			},
 			accessFunction: func(node *Node) bool {
@@ -232,7 +232,7 @@ func TestNode_isLastElement(t *testing.T) {
 				{Path: ".idea"},
 				{Path: ".gitignore"},
 			}},
-			addParentFunction: func(node *Node) {
+			prepareFunction: func(node *Node) {
 				node.Children[0].Parent = node
 				node.Children[1].Parent = node
 			},
@@ -247,7 +247,7 @@ func TestNode_isLastElement(t *testing.T) {
 				{Path: ".idea"},
 				{Path: ".gitignore"},
 			}},
-			addParentFunction: func(node *Node) {
+			prepareFunction: func(node *Node) {
 				node.Children[0].Parent = node
 				node.Children[1].Parent = node
 			},
@@ -261,7 +261,7 @@ func TestNode_isLastElement(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			// add the parent node to the child
-			test.addParentFunction(test.arg)
+			test.prepareFunction(test.arg)
 
 			output := test.accessFunction(test.arg)
 			assert.Equal(t, test.expected, output)
