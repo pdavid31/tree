@@ -38,6 +38,17 @@ func TestNode_Equals(t *testing.T) {
 	}
 }
 
+func BenchmarkNode_Equals(b *testing.B) {
+	n := []Node{
+		{Path: ".idea"},
+		{Path: ".idea"},
+	}
+
+	for i := 0; i < b.N; i++ {
+		n[0].Equals(n[1])
+	}
+}
+
 func TestNode_GetConfig(t *testing.T) {
 	tests := []struct {
 		name            string
@@ -80,6 +91,38 @@ func TestNode_GetConfig(t *testing.T) {
 
 			output := test.accessFunction(test.arg)
 			assert.Equal(t, test.expected, output)
+		})
+	}
+}
+
+func BenchmarkNode_GetConfig(b *testing.B) {
+	benchmarks := []struct {
+		name            string
+		arg             *Node
+		prepareFunction func(*Node)
+		accessFunction  func(*Node)
+	}{
+		{
+			name: "simple",
+			arg: &Node{Config: &TreeConfig{}, Children: []*Node{
+				{},
+			}},
+			prepareFunction: func(node *Node) {
+				node.Children[0].Parent = node
+			},
+			accessFunction: func(node *Node) {
+				node.Children[0].GetConfig()
+			},
+		},
+	}
+
+	for _, bm := range benchmarks {
+		bm.prepareFunction(bm.arg)
+
+		b.Run(bm.name, func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				bm.accessFunction(bm.arg)
+			}
 		})
 	}
 }
@@ -130,6 +173,38 @@ func TestNode_GetRoot(t *testing.T) {
 
 			output := test.accessFunction(test.arg)
 			assert.Equal(t, test.expected, output)
+		})
+	}
+}
+
+func BenchmarkNode_GetRoot(b *testing.B) {
+	benchmarks := []struct {
+		name            string
+		arg             *Node
+		prepareFunction func(*Node)
+		accessFunction  func(*Node)
+	}{
+		{
+			name: "simple",
+			arg: &Node{Config: &TreeConfig{}, Children: []*Node{
+				{},
+			}},
+			prepareFunction: func(node *Node) {
+				node.Children[0].Parent = node
+			},
+			accessFunction: func(node *Node) {
+				node.Children[0].GetRoot()
+			},
+		},
+	}
+
+	for _, bm := range benchmarks {
+		bm.prepareFunction(bm.arg)
+
+		b.Run(bm.name, func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				bm.accessFunction(bm.arg)
+			}
 		})
 	}
 }
@@ -207,6 +282,43 @@ func TestNode_String(t *testing.T) {
 	}
 }
 
+func BenchmarkNode_String(b *testing.B) {
+	benchmarks := []struct {
+		name            string
+		arg             *Node
+		prepareFunction func(*Node)
+		accessFunction  func(*Node)
+	}{
+		{
+			name: "nested",
+			arg: &Node{Config: &TreeConfig{}, Path: ".", Info: fakeFile{name: "."}, Children: []*Node{
+				{Path: "./.idea", Info: fakeFile{name: ".idea"}, Children: []*Node{
+					{Path: "./.idea/run.xml", Info: fakeFile{name: "run.xml"}},
+				}},
+				{Path: "./.gitignore", Info: fakeFile{name: ".gitignore"}},
+			}},
+			prepareFunction: func(node *Node) {
+				node.Children[0].Parent = node
+				node.Children[1].Parent = node
+				node.Children[0].Children[0].Parent = node.Children[0]
+			},
+			accessFunction: func(node *Node) {
+				node.String()
+			},
+		},
+	}
+
+	for _, bm := range benchmarks {
+		bm.prepareFunction(bm.arg)
+
+		b.Run(bm.name, func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				bm.accessFunction(bm.arg)
+			}
+		})
+	}
+}
+
 func TestNode_isLastElement(t *testing.T) {
 	tests := []struct {
 		name            string
@@ -265,6 +377,40 @@ func TestNode_isLastElement(t *testing.T) {
 
 			output := test.accessFunction(test.arg)
 			assert.Equal(t, test.expected, output)
+		})
+	}
+}
+
+func BenchmarkNode_isLastElement(b *testing.B) {
+	benchmarks := []struct {
+		name            string
+		arg             *Node
+		prepareFunction func(*Node)
+		accessFunction  func(*Node)
+	}{
+		{
+			name: "nested",
+			arg: &Node{Children: []*Node{
+				{Path: ".idea"},
+				{Path: ".gitignore"},
+			}},
+			prepareFunction: func(node *Node) {
+				node.Children[0].Parent = node
+				node.Children[1].Parent = node
+			},
+			accessFunction: func(node *Node) {
+				node.Children[1].isLastElement()
+			},
+		},
+	}
+
+	for _, bm := range benchmarks {
+		bm.prepareFunction(bm.arg)
+
+		b.Run(bm.name, func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				bm.accessFunction(bm.arg)
+			}
 		})
 	}
 }
