@@ -414,3 +414,38 @@ func BenchmarkNode_isLastElement(b *testing.B) {
 		})
 	}
 }
+
+func BenchmarkNode_getDepth(b *testing.B) {
+	benchmarks := []struct {
+		name            string
+		arg             *Node
+		prepareFunction func(*Node)
+		accessFunction  func(*Node)
+	}{
+		{
+			name: "nested",
+			arg: &Node{Config: &TreeConfig{}, Path: ".", Info: fakeFile{name: "."}, Children: []*Node{
+				{Path: "./.idea", Info: fakeFile{name: ".idea"}, Children: []*Node{
+					{Path: "./.idea/run.xml", Info: fakeFile{name: "run.xml"}},
+				}},
+			}},
+			prepareFunction: func(node *Node) {
+				node.Children[0].Parent = node
+				node.Children[0].Children[0].Parent = node.Children[0]
+			},
+			accessFunction: func(node *Node) {
+				node.Children[0].Children[0].getDepth()
+			},
+		},
+	}
+
+	for _, bm := range benchmarks {
+		bm.prepareFunction(bm.arg)
+
+		b.Run(bm.name, func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				bm.accessFunction(bm.arg)
+			}
+		})
+	}
+}
