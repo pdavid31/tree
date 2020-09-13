@@ -104,7 +104,7 @@ func (n Node) isLastElement() bool {
 	// if there is no Parent element we are in the root
 	// and therefore there are no siblings
 	if n.Parent == nil {
-		return false
+		return true
 	}
 
 	noOfSiblings := len(n.Parent.Children)
