@@ -6,6 +6,7 @@ import (
 
 	"github.com/pdavid31/tree/internal"
 
+	"github.com/gobwas/glob"
 	"github.com/spf13/cobra"
 )
 
@@ -29,7 +30,7 @@ var rootCmd = &cobra.Command{
 			DirectoriesOnly:    directoriesOnly,
 			DisableIndentation: disableIndentation,
 			FullPaths:          fullPaths,
-			Pattern:            pattern,
+			Pattern:            glob.MustCompile(pattern),
 		}
 
 		path := "."
@@ -42,7 +43,7 @@ var rootCmd = &cobra.Command{
 			panic(err)
 		}
 
-		fmt.Println(root)
+		fmt.Print(root)
 	},
 }
 
@@ -51,7 +52,7 @@ func init() {
 	rootCmd.PersistentFlags().BoolVarP(&directoriesOnly, "directories", "d", false, "Only list directories")
 	rootCmd.PersistentFlags().BoolVarP(&disableIndentation, "disable-indentation", "i", false, "Disable output indentation")
 	rootCmd.PersistentFlags().BoolVarP(&fullPaths, "full", "f", false, "Print the full path for each file")
-	rootCmd.PersistentFlags().StringVarP(&pattern, "pattern", "p", "", "List only files that match the wildcard pattern")
+	rootCmd.PersistentFlags().StringVarP(&pattern, "pattern", "p", "*", "List only files that match the wildcard pattern")
 }
 
 func Execute() {

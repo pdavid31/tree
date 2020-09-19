@@ -47,6 +47,52 @@ func (n Node) GetConfig() *TreeConfig {
 	return n.GetRoot().Config
 }
 
+// shouldBeIncluded checks if the node
+// should be included in the output
+// by applying all set filters
+func (n Node) shouldBeIncluded() bool {
+	c := n.GetConfig()
+
+	// check for hidden files
+	if !c.AllFiles && n.Info.Name()[0] == '.' {
+		return false
+	}
+
+	// check for directories only
+	if c.DirectoriesOnly && !n.Info.IsDir() {
+		return false
+	}
+
+	// check for pattern matching
+	// include matching files and directories that contain a matching file
+	if !n.matchesGlob() {
+		return false
+	}
+
+	return true
+}
+
+func (n Node) matchesGlob() bool {
+	c := n.GetConfig()
+
+	// TODO: check if the parent matches the glob
+
+	// return true if the own name matches the glob
+	if c.Pattern.Match(n.Info.Name()) {
+		return true
+	}
+
+	// check if children matches the glob
+	childrenMatches := false
+	for _, v := range n.Children {
+		if v.matchesGlob() {
+			childrenMatches = true
+		}
+	}
+
+	return childrenMatches
+}
+
 // Recursive recursively creates the Node tree by
 // calling Recursive on the nodes if they are directories
 func (n *Node) Recursive() error {
@@ -59,16 +105,19 @@ func (n *Node) Recursive() error {
 		return err
 	}
 
-	files = applyFilters(files, n.GetConfig())
-
-	children := make([]*Node, len(files))
-	for i, v := range files {
+	var children []*Node
+	for _, v := range files {
 		p := n.Path + string(os.PathSeparator) + v.Name()
 		n := &Node{Path: p, Info: v, Parent: n}
 		if err := n.Recursive(); err != nil {
 			return err
 		}
-		children[i] = n
+
+		if !n.shouldBeIncluded() {
+			continue
+		}
+
+		children = append(children, n)
 	}
 
 	n.Children = children
