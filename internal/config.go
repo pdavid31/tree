@@ -5,4 +5,5 @@ type TreeConfig struct {
 	DirectoriesOnly    bool
 	DisableIndentation bool
 	FullPaths          bool
+	Pattern            string
 }

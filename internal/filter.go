@@ -3,6 +3,8 @@ package internal
 import (
 	"os"
 	"strings"
+
+	"github.com/gobwas/glob"
 )
 
 func applyFilters(f []os.FileInfo, config *TreeConfig) []os.FileInfo {
@@ -17,26 +19,42 @@ func applyFilters(f []os.FileInfo, config *TreeConfig) []os.FileInfo {
 		c = removeFiles(c)
 	}
 
+	if config.Pattern != "" {
+		c = applyPattern(c, config.Pattern)
+	}
+
 	return c
 }
 
 // filter out all hidden files
 func removeHidden(f []os.FileInfo) []os.FileInfo {
-	n := 0
-	for _, x := range f {
-		if !strings.HasPrefix(x.Name(), ".") {
-			f[n] = x
-			n++
-		}
-	}
-	return f[:n]
+	return inplaceFilter(f, func(x os.FileInfo) bool {
+		return !strings.HasPrefix(x.Name(), ".")
+	})
 }
 
 // filter out all files (non directories)
 func removeFiles(f []os.FileInfo) []os.FileInfo {
+	return inplaceFilter(f, func(x os.FileInfo) bool {
+		return x.IsDir()
+	})
+}
+
+func applyPattern(f []os.FileInfo, pattern string) []os.FileInfo {
+	g, err := glob.Compile(pattern)
+	if err != nil {
+		return nil
+	}
+
+	return inplaceFilter(f, func(x os.FileInfo) bool {
+		return x.IsDir() || g.Match(x.Name())
+	})
+}
+
+func inplaceFilter(f []os.FileInfo, fn func(os.FileInfo) bool) []os.FileInfo {
 	n := 0
 	for _, x := range f {
-		if x.IsDir() {
+		if fn(x) {
 			f[n] = x
 			n++
 		}

@@ -14,6 +14,7 @@ var (
 	directoriesOnly    bool
 	disableIndentation bool
 	fullPaths          bool
+	pattern            string
 )
 
 var rootCmd = &cobra.Command{
@@ -28,6 +29,7 @@ var rootCmd = &cobra.Command{
 			DirectoriesOnly:    directoriesOnly,
 			DisableIndentation: disableIndentation,
 			FullPaths:          fullPaths,
+			Pattern:            pattern,
 		}
 
 		path := "."
@@ -49,6 +51,7 @@ func init() {
 	rootCmd.PersistentFlags().BoolVarP(&directoriesOnly, "directories", "d", false, "Only list directories")
 	rootCmd.PersistentFlags().BoolVarP(&disableIndentation, "disable-indentation", "i", false, "Disable output indentation")
 	rootCmd.PersistentFlags().BoolVarP(&fullPaths, "full", "f", false, "Print the full path for each file")
+	rootCmd.PersistentFlags().StringVarP(&pattern, "pattern", "p", "", "List only files that match the wildcard pattern")
 }
 
 func Execute() {
