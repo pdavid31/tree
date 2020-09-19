@@ -134,8 +134,8 @@ func (n Node) getPrefixes() string {
 		pc += "|"
 	}
 
-	// return prefixes and add a tabulator
-	return pc + "\t"
+	// return prefixes and add 4 spaces
+	return pc + "    "
 }
 
 // generatePrefix adds the computed prefixes
