@@ -63,34 +63,12 @@ func (n Node) shouldBeIncluded() bool {
 		return false
 	}
 
-	// check for pattern matching
-	// include matching files and directories that contain a matching file
-	if !n.matchesGlob() {
+	// check for files matching the pattern
+	if !n.Info.IsDir() && !c.Pattern.Match(n.Info.Name()) {
 		return false
 	}
 
 	return true
-}
-
-func (n Node) matchesGlob() bool {
-	c := n.GetConfig()
-
-	// TODO: check if the parent matches the glob
-
-	// return true if the own name matches the glob
-	if c.Pattern.Match(n.Info.Name()) {
-		return true
-	}
-
-	// check if children matches the glob
-	childrenMatches := false
-	for _, v := range n.Children {
-		if v.matchesGlob() {
-			childrenMatches = true
-		}
-	}
-
-	return childrenMatches
 }
 
 // Recursive recursively creates the Node tree by
