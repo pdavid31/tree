@@ -11,8 +11,8 @@ import (
 
 var (
 	allFiles           bool
-	disableIndentation bool
 	directoriesOnly    bool
+	disableIndentation bool
 	fullPaths          bool
 )
 
@@ -26,8 +26,8 @@ var rootCmd = &cobra.Command{
 		config := &internal.TreeConfig{
 			AllFiles:           allFiles,
 			DirectoriesOnly:    directoriesOnly,
-			FullPaths:          fullPaths,
 			DisableIndentation: disableIndentation,
+			FullPaths:          fullPaths,
 		}
 
 		path := "."
@@ -46,8 +46,8 @@ var rootCmd = &cobra.Command{
 
 func init() {
 	rootCmd.PersistentFlags().BoolVarP(&allFiles, "all", "a", false, "List all files")
-	rootCmd.PersistentFlags().BoolVarP(&disableIndentation, "disable-indentation", "i", false, "Disable output indentation")
 	rootCmd.PersistentFlags().BoolVarP(&directoriesOnly, "directories", "d", false, "Only list directories")
+	rootCmd.PersistentFlags().BoolVarP(&disableIndentation, "disable-indentation", "i", false, "Disable output indentation")
 	rootCmd.PersistentFlags().BoolVarP(&fullPaths, "full", "f", false, "Print the full path for each file")
 }
 
